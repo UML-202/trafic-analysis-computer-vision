@@ -12,7 +12,9 @@ Note:- The video file used in this project is with and extension .mp4
 
 To install visualstudio 2015 with opencv 3.1 please follow the link provided below
 https://www.youtube.com/watch?v=7SM5OD2pZKY&list=PLoLaqVexEviOkxJIMh3e8p6Ylu8bXfGZ9
+
                                    or
+                                   
 you follow this cheetsheet provided by chris dahms in the link above
 https://github.com/MicrocontrollersAndMore/OpenCV_3_Windows_10_Installation_Tutorial/blob/master/Installation%20Cheat%20Sheet%201%20-%20OpenCV%203%20and%20C%2B%2B.pdf
 
