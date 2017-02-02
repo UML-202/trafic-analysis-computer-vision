@@ -15,7 +15,7 @@ https://www.youtube.com/watch?v=7SM5OD2pZKY&list=PLoLaqVexEviOkxJIMh3e8p6Ylu8bXf
 
                                    or
                                    
-you follow this cheetsheet provided by chris dahms in the link above
+To be quick you follow this cheetsheet provided by chris dahms in the link above
 https://github.com/MicrocontrollersAndMore/OpenCV_3_Windows_10_Installation_Tutorial/blob/master/Installation%20Cheat%20Sheet%201%20-%20OpenCV%203%20and%20C%2B%2B.pdf
 
 Spring semester 
