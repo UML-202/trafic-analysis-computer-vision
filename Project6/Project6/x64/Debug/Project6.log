@@ -1,0 +1,4 @@
+﻿  cropingvideo.cpp
+c:\users\suveeryavaan\documents\visual studio 2015\projects\project6\project6\cropingvideo.cpp(29): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  Project6.vcxproj -> C:\Users\Suveeryavaan\documents\visual studio 2015\Projects\Project6\x64\Debug\learning.exe
+  Project6.vcxproj -> C:\Users\Suveeryavaan\documents\visual studio 2015\Projects\Project6\x64\Debug\learning.pdb (Partial PDB)
