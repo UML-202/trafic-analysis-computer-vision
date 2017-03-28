@@ -28,11 +28,23 @@ void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs);
 double distanceBetweenPoints(cv::Point point1, cv::Point point2);
 void drawAndShowContours(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName);
 void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName);
+/*bottom lane*/
 bool checkIfBlobsCrossedThebottomtotopLine(std::vector<Blob> &blobs, int &intHorizontalLinePosition1, int &intHorizontalLinePosition2, int &carCount);
 bool checkIfBlobsCrossedThebottomtoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition2, int &leftcarCount);
 bool checkIfBlobsCrossedThebottomtorightLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition2, int &rightcarCount);
+/*top lane*/
+bool checkIfBlobsCrossedThetoptobottomLine(std::vector<Blob> &blobs, int &intHorizontalLinePosition1, int &intHorizontalLinePosition2, int &carCount);
+bool checkIfBlobsCrossedThetoptorightLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition1, int &toprcarCount);
+bool checkIfBlobsCrossedThetoptoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition1, int &toplcarcount);
+/*left lane*/
+bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intVerticalLinePositionright, int &leftrcarCount);
+bool checkIfBlobsCrossedThelefttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition2, int &leftbcarCount);
+bool checkIfBlobsCrossedThelefttotopLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition1, int &lefttcarcount);
+/*right lane*/
+
+
 void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
-void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy,int &offset,string &directionName);
+void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy,int &yoffset,int &xoffset,string &directionName);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 class flags{
@@ -40,6 +52,12 @@ public:
 bool flagforwardbottomtotop ;
 bool flagbottomtoleft ;
 bool flagbottomtoright;
+bool flagtoptobottom;
+bool flagtoptoleft;
+bool flagtoptoright;
+bool flaglefttoright;
+bool flaglefttobottom;
+bool flaglefttotop;
 }Flags[500];
 
 
@@ -53,7 +71,7 @@ int main(void) {
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
 	string directionName;
-	int offset;
+	int yoffset,xoffset;
 	std::vector<Blob> blobs;
 	/*horizontal lines top and bottom*/
 	cv::Point crossingLine1[2];     // top line coordinates horizontal line-1
@@ -65,6 +83,12 @@ int main(void) {
 	int carCount = 0;
 	int leftcarCount = 0;
 	int rightcarCount = 0;
+	int topbcarCount = 0;
+	int toprcarCount = 0;
+	int toplcarCount = 0;
+	int leftrcarCount = 0;
+	int leftbcarCount = 0;
+	int lefttcarCount = 0;
 
 	play.open("CarsDrivingUnderBridge.mp4");
 
@@ -101,6 +125,7 @@ int main(void) {
 
 	crossingLine2[1].x = 775;//imgFrame1.cols - 1;
 	crossingLine2[1].y = intHorizontalLinePosition2;
+
 	/*vertical lines*/
 	int intVerticalLinePositionleft = 400;
 	int intVerticalLinePositionright = 850;
@@ -246,19 +271,66 @@ int main(void) {
 		else {
 			cv::line(imgFrame2Copy, crossingLine4[0], crossingLine4[1], SCALAR_RED, 2);
 		}
+		////////////////////////////////////////////
+		/*top to bottom*/
+		bool blnAtLeastOneBlobCrossedThetoptobottomLine = checkIfBlobsCrossedThetoptobottomLine(blobs, intHorizontalLinePosition1, intHorizontalLinePosition2, topbcarCount);
+		/*top to right*/
+		bool blnAtLeastOneBlobCrossedThetoptorightLine = checkIfBlobsCrossedThetoptorightLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, toprcarCount);
+		/*top to left*/
+		bool blnAtLeastOneBlobCrossedThetoptoleftLine = checkIfBlobsCrossedThetoptoleftLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition1, toplcarCount);
+		/////////////////////////////////////////////
+		/*left to right*/
+		bool blnAtLeastOneBlobCrossedThelefttorightLine = checkIfBlobsCrossedThelefttorightLine(blobs, intVerticalLinePositionleft, intVerticalLinePositionright, leftrcarCount);
+		/*left to bottom*/
+		bool blnAtLeastOneBlobCrossedThelefttobottomLine = checkIfBlobsCrossedThelefttobottomtLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition2, leftbcarCount);
+		/*left to top*/
+		bool blnAtLeastOneBlobCrossedThelefttotopLine = checkIfBlobsCrossedThelefttotopLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, lefttcarCount);
 		/*ends here*/
+		/*bottom to top*/
 		directionName = "forward:";
-		offset =400+ 0;
-		drawCarCountOnImage(carCount, imgFrame2Copy, offset,directionName);
+		yoffset =400+ 0;
+		xoffset = 0;
+		drawCarCountOnImage(carCount, imgFrame2Copy, yoffset, xoffset,directionName);
 		directionName = "left:";
-		offset = 400 + 50;
+		yoffset = 400 + 50;
+		xoffset = 0;
 		//int off =400+ 50;
-		drawCarCountOnImage(leftcarCount, imgFrame2Copy, offset,directionName);
+		drawCarCountOnImage(leftcarCount, imgFrame2Copy, yoffset, xoffset,directionName);
 		directionName = "right:";
-		offset= 400 + 100;
+		yoffset= 400 + 100;
+		xoffset = 0;
 		//int off1 = 400+100;
-		drawCarCountOnImage(rightcarCount, imgFrame2Copy, offset, directionName);
-
+		drawCarCountOnImage(rightcarCount, imgFrame2Copy, yoffset, xoffset,directionName);
+		/*top to bottom*/
+		directionName = "straight:";
+		yoffset =  0;
+		xoffset = 700;
+		drawCarCountOnImage(topbcarCount, imgFrame2Copy, yoffset,xoffset, directionName);
+		/*top to right*/
+		directionName = "right:";
+		yoffset = 50;
+		xoffset = 700;
+		drawCarCountOnImage(toprcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+		/*top to left*/
+		directionName = "left:";
+		yoffset = 100;
+		xoffset = 700;
+		drawCarCountOnImage(toplcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+		/*left to right*/
+		directionName = "straight:";
+		yoffset = 450;
+		xoffset = 800;
+		drawCarCountOnImage(leftrcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+		/*left to bottom*/
+		directionName = "right:";
+		yoffset = 500;
+		xoffset = 800;
+		drawCarCountOnImage(leftbcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+		/*left to top*/
+		directionName = "left:";
+		yoffset = 550;
+		xoffset = 800;
+		drawCarCountOnImage(lefttcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
 		cv::imshow("imgFrame2Copy", imgFrame2Copy);
 
 		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
@@ -544,6 +616,314 @@ bool checkIfBlobsCrossedThebottomtorightLine(std::vector<Blob> &blobs, int &intV
 
 
 }
+
+/*******Top to bottom (Reverse direction) *******/
+bool checkIfBlobsCrossedThetoptobottomLine(std::vector<Blob> &blobs, int &intHorizontalLinePosition1, int &intHorizontalLinePosition2, int &topbcarcount) {
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1)
+			{
+				Flags[presentcarcount].flagtoptobottom = true;
+				Flags[presentcarcount].flagtoptoleft = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flagtoptobottom) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition2))
+			{
+
+				topbcarcount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flagtoptobottom = false;
+				Flags[presentcarcount].flagbottomtoleft = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+}
+/*top to right(left becomes right)*/
+bool checkIfBlobsCrossedThetoptorightLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition1, int &toprcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "centerpostiton x = " << blob.centerPositions[prevFrameIndex].x << endl;
+
+			if (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1)
+			{
+				Flags[presentcarcount].flagtoptobottom = true;
+				Flags[presentcarcount].flagtoptoright = true;
+				/*cout << "phase-2" << endl;
+				cout << "phase-2" << endl;
+				cout << "phase-2" << endl; cout << "phase-2 " << endl;
+				cout << "phase-2" << endl;
+				*/
+
+			}
+			if ((Flags[presentcarcount].flagtoptoright) && (blob.centerPositions[prevFrameIndex].x > intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x <= intVerticalLinePositionleft))
+			{
+
+				toprcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flagtoptoright = false;
+				//break;
+			}
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+
+
+}
+/*top to left*/
+bool checkIfBlobsCrossedThetoptoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition1, int &toplcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			//cout << "centerpostiton x for right= " << blob.centerPositions[prevFrameIndex].x << endl;
+
+			if (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1)
+			{
+				Flags[presentcarcount].flagtoptoleft = true;
+				Flags[presentcarcount].flagtoptobottom = true;
+				/*cout << "phase-2" << endl;
+				cout << "phase-2" << endl;
+				cout << "phase-2" << endl; cout << "phase-2 " << endl;
+				cout << "phase-2" << endl;
+				*/
+
+			}
+			if ((Flags[presentcarcount].flagbottomtoleft) && (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionright && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionright))
+			{
+
+				toplcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flagtoptoleft = false;
+				//break;
+			}
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+
+
+
+}
+/*left to right*/
+bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intVerticalLinePositionright, int &leftrcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionleft)
+			{
+				Flags[presentcarcount].flaglefttoright = true;
+				Flags[presentcarcount].flaglefttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flaglefttoright) && (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionright && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionright))
+			{
+
+				leftrcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flaglefttoright = false;
+				Flags[presentcarcount].flaglefttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+}
+/*left to bottom*/
+bool checkIfBlobsCrossedThelefttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition2, int &leftbcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionleft)
+			{
+				Flags[presentcarcount].flaglefttoright = true;
+				Flags[presentcarcount].flaglefttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flaglefttobottom) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition2))
+			{
+
+				leftbcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flaglefttoright = false;
+				Flags[presentcarcount].flaglefttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+}
+/*left to top*/
+bool checkIfBlobsCrossedThelefttotopLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition1, int &lefttcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionleft)
+			{
+				Flags[presentcarcount].flaglefttotop = true;
+				Flags[presentcarcount].flaglefttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flaglefttotop) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1))
+			{
+
+				lefttcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flaglefttoright = false;
+				Flags[presentcarcount].flaglefttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
 
@@ -562,7 +942,7 @@ void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy, int &offset, string &directionName) {
+void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy, int &yoffset,int &xoffset, string &directionName) {
 
 	int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
 	
@@ -576,10 +956,10 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy, int &offset, str
 	Point count;
 	ptTextBottomLeftPosition.x = imgFrame2Copy.cols - 1 - (int)((double)textSize.width * 1.25);
     ptTextBottomLeftPosition.y = (int)((double)textSize.height * 1.25);
-	text.x = ptTextBottomLeftPosition.x - 400;
-	text.y = ptTextBottomLeftPosition.y + offset;
-	count.x = ptTextBottomLeftPosition.x;
-	count.y = ptTextBottomLeftPosition.y + offset;
+	text.x = ptTextBottomLeftPosition.x - 400 - xoffset;
+	text.y = ptTextBottomLeftPosition.y + yoffset;
+	count.x = ptTextBottomLeftPosition.x - xoffset;
+	count.y = ptTextBottomLeftPosition.y + yoffset;
 	//cout << endl << "positio y = " << ptTextBottomLeftPosition.y << endl;
 	cv::putText(imgFrame2Copy, directionName, text, intFontFace, dblFontScale, SCALAR_WHITE, intFontThickness);
 	cv::putText(imgFrame2Copy, std::to_string(carCount), count, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
