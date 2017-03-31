@@ -41,6 +41,9 @@ bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVer
 bool checkIfBlobsCrossedThelefttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition2, int &leftbcarCount);
 bool checkIfBlobsCrossedThelefttotopLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition1, int &lefttcarcount);
 /*right lane*/
+bool checkIfBlobsCrossedTherighttoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intVerticalLinePositionright, int &rightlcarCount);
+bool checkIfBlobsCrossedTherighttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition2, int &rightbcarCount);
+bool checkIfBlobsCrossedTherighttotopLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition1, int &righttcarcount);
 
 
 void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
@@ -58,6 +61,9 @@ bool flagtoptoright;
 bool flaglefttoright;
 bool flaglefttobottom;
 bool flaglefttotop;
+bool flagrighttoleft;
+bool flagrighttobottom;
+bool flagrighttotop;
 }Flags[500];
 
 
@@ -66,7 +72,7 @@ int main(void) {
 
 	cv::VideoCapture play;
 	cv::Mat frame, src1, src2, dst;                                                           //creating image type variables
-	cv::Rect r(0, 450, 520, 269), r1(790, 0, 490, 240), r3(800, 375, 480, 343), r2(0, 0, 570, 250); //creating region of interests 
+	cv::Rect r(0, 450, 520, 269), r1(750, 0, 525, 240), r3(800, 365, 475, 343), r2(0, 0, 570, 200); //creating region of interests 
 	 
 	cv::Mat imgFrame1;
 	cv::Mat imgFrame2;
@@ -80,15 +86,8 @@ int main(void) {
 	cv::Point crossingLine3[2];     // top line coordinates horizontal line-1
 	cv::Point crossingLine4[2];     // bottom line coordinates horizontal line-2
 	
-	int carCount = 0;
-	int leftcarCount = 0;
-	int rightcarCount = 0;
-	int topbcarCount = 0;
-	int toprcarCount = 0;
-	int toplcarCount = 0;
-	int leftrcarCount = 0;
-	int leftbcarCount = 0;
-	int lefttcarCount = 0;
+	int carCount = 0, leftcarCount = 0, rightcarCount = 0, topbcarCount = 0, toprcarCount = 0, toplcarCount = 0, leftrcarCount = 0,
+		leftbcarCount = 0, lefttcarCount = 0, rightlcarCount = 0, rightbcarCount = 0, righttcarcount = 0;
 
 	play.open("CarsDrivingUnderBridge.mp4");
 
@@ -147,216 +146,245 @@ int main(void) {
 	bool blnFirstFrame = true;
 
 	int frameCount = 2;
-
+	int numberoftimesitisentering = 0.0;
 	while (play.isOpened() && chCheckForEscKey != 27) {
-		play >> imgFrame2;                                                                  //getting the next frame from the video
-		//imshow("frame", frame);																//showing the original frame
-																							/*croping the required part of the image in this section*/
-		imgFrame2(r2) = 0;//left top
-		imgFrame2(r) = 0;//left bottom
-		imgFrame2(r1) = 0;//right top'
-		imgFrame2(r3) = 0;//right bottom
-					  /*Uptil here*/
-		std::vector<Blob> currentFrameBlobs;
+		numberoftimesitisentering++;
+		if (((numberoftimesitisentering) % 2) == 0.0) {
+			cout << "hi " << endl;
+			play >> imgFrame2;                                                                  //getting the next frame from the video
+			//imshow("frame", frame);																//showing the original frame
+																								/*croping the required part of the image in this section*/
+			imgFrame2(r2) = 0;//left top
+			imgFrame2(r) = 0;//left bottom
+			imgFrame2(r1) = 0;//right top'
+			imgFrame2(r3) = 0;//right bottom
+						  /*Uptil here*/
+			std::vector<Blob> currentFrameBlobs;
 
-		cv::Mat imgFrame1Copy = imgFrame1.clone();
-		cv::Mat imgFrame2Copy = imgFrame2.clone();
+			cv::Mat imgFrame1Copy = imgFrame1.clone();
+			cv::Mat imgFrame2Copy = imgFrame2.clone();
 
-		cv::Mat imgDifference;
-		cv::Mat imgThresh;
+			cv::Mat imgDifference;
+			cv::Mat imgThresh;
 
-		cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
-		cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
+			cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
+			cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
 
-		cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);
-		cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
+			cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);
+			cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
+			
+			cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
+			imshow("hello", imgDifference);
+			cv::threshold(imgDifference, imgThresh, 10, 255.0, CV_THRESH_BINARY);/// responsible for detection of single blob into multiple have to correct this
 
-		cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
-		
-		cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-		
-		cv::imshow("imgThresh", imgThresh);
+			cv::imshow("imgThresh", imgThresh);
 
-		cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-		cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-		cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
-		cv::Mat structuringElement15x15 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(15, 15));
+			cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+			cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+			cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
+			cv::Mat structuringElement15x15 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(15, 15));
 
-		for (unsigned int i = 0; i < 2; i++) {
-			cv::dilate(imgThresh, imgThresh, structuringElement5x5);
-			cv::dilate(imgThresh, imgThresh, structuringElement5x5);
-			cv::erode(imgThresh, imgThresh, structuringElement5x5);
-		}
-
-		cv::Mat imgThreshCopy = imgThresh.clone();
-
-		std::vector<std::vector<cv::Point> > contours;
-
-		cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-		imshow("hello",imgThreshCopy);
-		//cout << endl << "contour = " << contours[0] << endl;
-		drawAndShowContours(imgThresh.size(), contours, "imgContours");
-
-		std::vector<std::vector<cv::Point> > convexHulls(contours.size());
-
-		for (unsigned int i = 0; i < contours.size(); i++) {
-			cv::convexHull(contours[i], convexHulls[i]);
-		}
-
-		drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
-
-		for (auto &convexHull : convexHulls) {
-			Blob possibleBlob(convexHull);
-
-			if (possibleBlob.currentBoundingRect.area() > 400 &&
-				possibleBlob.dblCurrentAspectRatio > 0.2 &&
-				possibleBlob.dblCurrentAspectRatio < 4.0 &&
-				possibleBlob.currentBoundingRect.width > 30 &&
-				possibleBlob.currentBoundingRect.height > 30 &&
-				possibleBlob.dblCurrentDiagonalSize > 60.0 &&
-				(cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.50) {
-				currentFrameBlobs.push_back(possibleBlob);
+			for (unsigned int i = 0; i < 2; i++) {
+				cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+				cv::dilate(imgThresh, imgThresh, structuringElement5x5);
+				cv::erode(imgThresh, imgThresh, structuringElement5x5);
 			}
-		}
 
-		drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
+			cv::Mat imgThreshCopy = imgThresh.clone();
 
-		if (blnFirstFrame == true) {
-			for (auto &currentFrameBlob : currentFrameBlobs) {
-				blobs.push_back(currentFrameBlob);
+			std::vector<std::vector<cv::Point> > contours;
+
+			cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+			
+			//cout << endl << "contour = " << contours[0] << endl;
+			drawAndShowContours(imgThresh.size(), contours, "imgContours");
+
+			std::vector<std::vector<cv::Point> > convexHulls(contours.size());
+
+			for (unsigned int i = 0; i < contours.size(); i++) {
+				cv::convexHull(contours[i], convexHulls[i]);
 			}
-		}
-		else {
-			matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
-		}
 
-		drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
-		//imshow("hiii..", blobs[0]);
-		//cout << "blob" << blobs[0] << endl;
+			drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
 
-		imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
+			for (auto &convexHull : convexHulls) {
+				Blob possibleBlob(convexHull);
 
-		drawBlobInfoOnImage(blobs, imgFrame2Copy);
-		/*bottom to top*/
-		bool blnAtLeastOneBlobCrossedThebottomtotopLine = checkIfBlobsCrossedThebottomtotopLine(blobs, intHorizontalLinePosition1, intHorizontalLinePosition2, carCount);
-		/*top horizontal line 1*/
-		if (blnAtLeastOneBlobCrossedThebottomtotopLine == true) {
-			cv::line(imgFrame2Copy, crossingLine1[0], crossingLine1[1], SCALAR_GREEN, 2); // this is the 1st line top forward line
-		}
-		else {
-			cv::line(imgFrame2Copy, crossingLine1[0], crossingLine1[1], SCALAR_RED, 2);
-		}
-		/*added for bottom horizontal line 2*/
-		if (blnAtLeastOneBlobCrossedThebottomtotopLine == true) {
-			cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_GREEN, 2);
-		}
-		else {
-			cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
-		}
-		/*bottom to left*/
-		bool blnAtLeastOneBlobCrossedThebottomtoleftLine =checkIfBlobsCrossedThebottomtoleftLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition2, leftcarCount);
-		/*left vertical line*/
-		if (blnAtLeastOneBlobCrossedThebottomtoleftLine == true) {
-			cv::line(imgFrame2Copy, crossingLine3[0], crossingLine3[1], SCALAR_GREEN, 2);
-		}
-		else {
-			cv::line(imgFrame2Copy, crossingLine3[0], crossingLine3[1], SCALAR_RED, 2);
-		}
-		/*bottom to right*/
-		bool blnAtLeastOneBlobCrossedThebottomtorightLine = checkIfBlobsCrossedThebottomtorightLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition2, rightcarCount);
-		/*right vertical line*/
-		if (blnAtLeastOneBlobCrossedThebottomtorightLine == true) {
-			cv::line(imgFrame2Copy, crossingLine4[0], crossingLine4[1], SCALAR_GREEN, 2);
-		}
-		else {
-			cv::line(imgFrame2Copy, crossingLine4[0], crossingLine4[1], SCALAR_RED, 2);
-		}
-		////////////////////////////////////////////
-		/*top to bottom*/
-		bool blnAtLeastOneBlobCrossedThetoptobottomLine = checkIfBlobsCrossedThetoptobottomLine(blobs, intHorizontalLinePosition1, intHorizontalLinePosition2, topbcarCount);
-		/*top to right*/
-		bool blnAtLeastOneBlobCrossedThetoptorightLine = checkIfBlobsCrossedThetoptorightLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, toprcarCount);
-		/*top to left*/
-		bool blnAtLeastOneBlobCrossedThetoptoleftLine = checkIfBlobsCrossedThetoptoleftLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition1, toplcarCount);
-		/////////////////////////////////////////////
-		/*left to right*/
-		bool blnAtLeastOneBlobCrossedThelefttorightLine = checkIfBlobsCrossedThelefttorightLine(blobs, intVerticalLinePositionleft, intVerticalLinePositionright, leftrcarCount);
-		/*left to bottom*/
-		bool blnAtLeastOneBlobCrossedThelefttobottomLine = checkIfBlobsCrossedThelefttobottomtLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition2, leftbcarCount);
-		/*left to top*/
-		bool blnAtLeastOneBlobCrossedThelefttotopLine = checkIfBlobsCrossedThelefttotopLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, lefttcarCount);
-		/*ends here*/
-		/*bottom to top*/
-		directionName = "forward:";
-		yoffset =400+ 0;
-		xoffset = 0;
-		drawCarCountOnImage(carCount, imgFrame2Copy, yoffset, xoffset,directionName);
-		directionName = "left:";
-		yoffset = 400 + 50;
-		xoffset = 0;
-		//int off =400+ 50;
-		drawCarCountOnImage(leftcarCount, imgFrame2Copy, yoffset, xoffset,directionName);
-		directionName = "right:";
-		yoffset= 400 + 100;
-		xoffset = 0;
-		//int off1 = 400+100;
-		drawCarCountOnImage(rightcarCount, imgFrame2Copy, yoffset, xoffset,directionName);
-		/*top to bottom*/
-		directionName = "straight:";
-		yoffset =  0;
-		xoffset = 700;
-		drawCarCountOnImage(topbcarCount, imgFrame2Copy, yoffset,xoffset, directionName);
-		/*top to right*/
-		directionName = "right:";
-		yoffset = 50;
-		xoffset = 700;
-		drawCarCountOnImage(toprcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
-		/*top to left*/
-		directionName = "left:";
-		yoffset = 100;
-		xoffset = 700;
-		drawCarCountOnImage(toplcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
-		/*left to right*/
-		directionName = "straight:";
-		yoffset = 450;
-		xoffset = 800;
-		drawCarCountOnImage(leftrcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
-		/*left to bottom*/
-		directionName = "right:";
-		yoffset = 500;
-		xoffset = 800;
-		drawCarCountOnImage(leftbcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
-		/*left to top*/
-		directionName = "left:";
-		yoffset = 550;
-		xoffset = 800;
-		drawCarCountOnImage(lefttcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
-		cv::imshow("imgFrame2Copy", imgFrame2Copy);
+				if (possibleBlob.currentBoundingRect.area() > 400 &&
+					possibleBlob.dblCurrentAspectRatio > 0.2 &&
+					possibleBlob.dblCurrentAspectRatio < 4.0 &&
+					possibleBlob.currentBoundingRect.width > 30 &&
+					possibleBlob.currentBoundingRect.height > 30 &&
+					possibleBlob.dblCurrentDiagonalSize > 60.0 &&
+					(cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.50) {
+					currentFrameBlobs.push_back(possibleBlob);
+				}
+			}
 
-		//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
+			drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
 
-		// now we prepare for the next iteration
+			if (blnFirstFrame == true) {
+				for (auto &currentFrameBlob : currentFrameBlobs) {
+					blobs.push_back(currentFrameBlob);
+				}
+			}
+			else {
+				matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
+			}
 
-		currentFrameBlobs.clear();
+			drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
+			//imshow("hiii..", blobs[0]);
+			//cout << "blob" << blobs[0] << endl;
 
-		imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
+			imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
 
-		if ((play.get(CV_CAP_PROP_POS_FRAMES) + 1) < play.get(CV_CAP_PROP_FRAME_COUNT)) {
-			play.read(imgFrame2);
+			drawBlobInfoOnImage(blobs, imgFrame2Copy);
+			/*bottom to top*/
+			bool blnAtLeastOneBlobCrossedThebottomtotopLine = checkIfBlobsCrossedThebottomtotopLine(blobs, intHorizontalLinePosition1, intHorizontalLinePosition2, carCount);
+			/*top horizontal line 1*/
+			if (blnAtLeastOneBlobCrossedThebottomtotopLine == true) {
+				cv::line(imgFrame2Copy, crossingLine1[0], crossingLine1[1], SCALAR_GREEN, 2); // this is the 1st line top forward line
+			}
+			else {
+				cv::line(imgFrame2Copy, crossingLine1[0], crossingLine1[1], SCALAR_RED, 2);
+			}
+			/*added for bottom horizontal line 2*/
+			if (blnAtLeastOneBlobCrossedThebottomtotopLine == true) {
+				cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_GREEN, 2);
+			}
+			else {
+				cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
+			}
+			/*bottom to left*/
+			bool blnAtLeastOneBlobCrossedThebottomtoleftLine = checkIfBlobsCrossedThebottomtoleftLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition2, leftcarCount);
+			/*left vertical line*/
+			if (blnAtLeastOneBlobCrossedThebottomtoleftLine == true) {
+				cv::line(imgFrame2Copy, crossingLine3[0], crossingLine3[1], SCALAR_GREEN, 2);
+			}
+			else {
+				cv::line(imgFrame2Copy, crossingLine3[0], crossingLine3[1], SCALAR_RED, 2);
+			}
+			/*bottom to right*/
+			bool blnAtLeastOneBlobCrossedThebottomtorightLine = checkIfBlobsCrossedThebottomtorightLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition2, rightcarCount);
+			/*right vertical line*/
+			if (blnAtLeastOneBlobCrossedThebottomtorightLine == true) {
+				cv::line(imgFrame2Copy, crossingLine4[0], crossingLine4[1], SCALAR_GREEN, 2);
+			}
+			else {
+				cv::line(imgFrame2Copy, crossingLine4[0], crossingLine4[1], SCALAR_RED, 2);
+			}
+			////////////////////////////////////////////
+			/*top to bottom*/
+			bool blnAtLeastOneBlobCrossedThetoptobottomLine = checkIfBlobsCrossedThetoptobottomLine(blobs, intHorizontalLinePosition1, intHorizontalLinePosition2, topbcarCount);
+			/*top to right*/
+			bool blnAtLeastOneBlobCrossedThetoptorightLine = checkIfBlobsCrossedThetoptorightLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, toprcarCount);
+			/*top to left*/
+			bool blnAtLeastOneBlobCrossedThetoptoleftLine = checkIfBlobsCrossedThetoptoleftLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition1, toplcarCount);
+			/////////////////////////////////////////////
+			/*left to right*/
+			bool blnAtLeastOneBlobCrossedThelefttorightLine = checkIfBlobsCrossedThelefttorightLine(blobs, intVerticalLinePositionleft, intVerticalLinePositionright, leftrcarCount);
+			/*left to bottom*/
+			bool blnAtLeastOneBlobCrossedThelefttobottomLine = checkIfBlobsCrossedThelefttobottomtLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition2, leftbcarCount);
+			/*left to top*/
+			bool blnAtLeastOneBlobCrossedThelefttotopLine = checkIfBlobsCrossedThelefttotopLine(blobs, intVerticalLinePositionleft, intHorizontalLinePosition1, lefttcarCount);
+			//////////////////////////////////////////
+			/*right to left*/
+			bool blnAtLeastOneBlobCrossedTherighttoleftLine = checkIfBlobsCrossedTherighttoleftLine(blobs, intVerticalLinePositionleft, intVerticalLinePositionright, rightlcarCount);
+			/*right to bottom*/
+			bool blnAtLeastOneBlobCrossedTherighttobottomLine = checkIfBlobsCrossedTherighttobottomtLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition2, rightbcarCount);
+			/*right to top*/
+			bool blnAtLeastOneBlobCrossedTherighttotopLine = checkIfBlobsCrossedTherighttotopLine(blobs, intVerticalLinePositionright, intHorizontalLinePosition1, righttcarcount);
+			/*ends here*/
+			/*bottom to top*/
+			directionName = "forward:";
+			yoffset = 400 + 0;
+			xoffset = 0;
+			drawCarCountOnImage(carCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			directionName = "left:";
+			yoffset = 400 + 50;
+			xoffset = 0;
+			//int off =400+ 50;
+			drawCarCountOnImage(leftcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			directionName = "right:";
+			yoffset = 400 + 100;
+			xoffset = 0;
+			//int off1 = 400+100;
+			drawCarCountOnImage(rightcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*top to bottom*/
+			directionName = "straight:";
+			yoffset = 0;
+			xoffset = 700;
+			drawCarCountOnImage(topbcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*top to right*/
+			directionName = "right:";
+			yoffset = 50;
+			xoffset = 700;
+			drawCarCountOnImage(toprcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*top to left*/
+			directionName = "left:";
+			yoffset = 100;
+			xoffset = 700;
+			drawCarCountOnImage(toplcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*left to right*/
+			directionName = "straight:";
+			yoffset = 450;
+			xoffset = 800;
+			drawCarCountOnImage(leftrcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*left to bottom*/
+			directionName = "right:";
+			yoffset = 500;
+			xoffset = 800;
+			drawCarCountOnImage(leftbcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*left to top*/
+			directionName = "left:";
+			yoffset = 550;
+			xoffset = 800;
+			drawCarCountOnImage(lefttcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/*right to left*/
+			directionName = "Rstraight:";
+			yoffset = 0;
+			xoffset = 50;
+			drawCarCountOnImage(rightlcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+
+			/*right to bottom*/
+			directionName = " Rleft:";
+			yoffset = 50;
+			xoffset = 50;
+			drawCarCountOnImage(rightbcarCount, imgFrame2Copy, yoffset, xoffset, directionName);
+			/* right to top*/
+			directionName = " Rright:";
+			yoffset = 95;
+			xoffset = 50;
+			drawCarCountOnImage(righttcarcount, imgFrame2Copy, yoffset, xoffset, directionName);
+
+			cv::imshow("imgFrame2Copy", imgFrame2Copy);
+			//cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
+
+			// now we prepare for the next iteration
+
+			currentFrameBlobs.clear();
+
+			imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
+
+			if ((play.get(CV_CAP_PROP_POS_FRAMES) + 1) < play.get(CV_CAP_PROP_FRAME_COUNT)) {
+				play.read(imgFrame2);
+			}
+			else {
+				std::cout << "end of video\n";
+				break;
+			}
+
+			blnFirstFrame = false;
+			frameCount++;
+			chCheckForEscKey = cv::waitKey(1);
 		}
-		else {
-			std::cout << "end of video\n";
-			break;
-		}
-
-		blnFirstFrame = false;
-		frameCount++;
-		chCheckForEscKey = cv::waitKey(1);
 	}
+	
 
 	if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
 		cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
 	}
+
 	// note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
 
 	return(0);
@@ -473,11 +501,11 @@ void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::strin
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/*changed in the if statement and also in the function arguments*///int numberoftimesitisentering = 0;
+/*changed in the if statement and also in the function arguments*///
 bool checkIfBlobsCrossedThebottomtotopLine(std::vector<Blob> &blobs, int &intHorizontalLinePosition1, int &intHorizontalLinePosition2, int &carCount) {
 	bool blnAtLeastOneBlobCrossedTheLine = false;
 	cout << "blob size in check block = " << blobs.size() << endl;
-	//numberoftimesitisentering++;
+	
 	//for (unsigned int i = 0; i < blobs.size(); i++) {
 		int blobnumber = blobs.size()-1;
 		int presentcarcount = 0;
@@ -900,13 +928,176 @@ bool checkIfBlobsCrossedThelefttotopLine(std::vector<Blob> &blobs, int &intVerti
 
 
 			}
-			if ((Flags[presentcarcount].flaglefttotop) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1))
+			if ((Flags[presentcarcount].flaglefttotop) && (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition1))
 			{
 
 				lefttcarCount++;
 				blnAtLeastOneBlobCrossedTheLine = true;
 				Flags[presentcarcount].flaglefttoright = false;
 				Flags[presentcarcount].flaglefttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+}
+
+/*right to left*/
+bool checkIfBlobsCrossedTherighttoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intVerticalLinePositionright, int &rightlcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionright && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionright)
+			{
+				Flags[presentcarcount].flagrighttoleft = true;
+				//Flags[presentcarcount].flaglefttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flagrighttoleft) && (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionleft))
+			{
+
+				rightlcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flagrighttoleft = false;
+				//[presentcarcount].flaglefttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+}
+/*right to bottom*/
+bool checkIfBlobsCrossedTherighttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition2, int &rightbcarCount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionright && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionright)
+			{
+				//Flags[presentcarcount].flaglefttoright = true;
+				Flags[presentcarcount].flagrighttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flagrighttobottom) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition2))
+			{
+
+				rightbcarCount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				//Flags[presentcarcount].flaglefttoright = false;
+				Flags[presentcarcount].flagrighttobottom = false;
+				//break;
+			}
+
+
+			//cout << "hello" << endl;
+
+
+		}
+
+	}
+
+	return blnAtLeastOneBlobCrossedTheLine;
+
+
+}
+
+/*right to top*/
+bool checkIfBlobsCrossedTherighttotopLine(std::vector<Blob> &blobs, int &intVerticalLinePositionright, int &intHorizontalLinePosition1, int &righttcarcount)
+{
+	bool blnAtLeastOneBlobCrossedTheLine = false;
+	cout << "blob size in check block = " << blobs.size() << endl;
+	//numberoftimesitisentering++;
+	//for (unsigned int i = 0; i < blobs.size(); i++) {
+	int blobnumber = blobs.size() - 1;
+	int presentcarcount = 0;
+	//}
+	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
+	for (auto blob : blobs) {
+		presentcarcount++;
+		//cout << "number of times entering into the fo loop" << op << endl;
+		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
+			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+			int currFrameIndex = (int)blob.centerPositions.size() - 1;
+			cout << "you have entered the show() here " << endl;
+			blobs[blobnumber].show(blobnumber);
+			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionright && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionright)
+			{
+				Flags[presentcarcount].flagrighttotop = true;
+				//Flags[presentcarcount].flaglefttobottom = true;
+				/*cout << "phase-1" << endl;
+				cout << "phase-1" << endl;
+				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+				cout << "phase-1" << endl;*/
+
+
+			}
+			if ((Flags[presentcarcount].flagrighttotop) && (blob.centerPositions[prevFrameIndex].y < intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y >= intHorizontalLinePosition1))
+			{
+
+				righttcarcount++;
+				blnAtLeastOneBlobCrossedTheLine = true;
+				Flags[presentcarcount].flagrighttotop = false;
+				//Flags[presentcarcount].flaglefttobottom = false;
 				//break;
 			}
 
