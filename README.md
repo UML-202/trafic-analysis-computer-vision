@@ -8,7 +8,7 @@ Step-2 :- click on the project 6 file again to look into all the files that are 
 
 Step-3 :- Download the required .cpp file and run it under opencv 3.1 module environment in visualstudio 2015
 
-Note:- The video file used in this project is with and extension .mp4
+Note:- The video file used in this project is with an extension .mp4
 
 To install visualstudio 2015 with opencv 3.1 please follow the link provided below
 https://www.youtube.com/watch?v=7SM5OD2pZKY&list=PLoLaqVexEviOkxJIMh3e8p6Ylu8bXfGZ9
