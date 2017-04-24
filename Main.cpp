@@ -3,7 +3,7 @@
 #include<opencv2/core/core.hpp>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
-
+#include<cmath>
 #include<iostream>
 #include<conio.h>           // it may be necessary to change or remove this line if not using Windows
 
@@ -66,7 +66,7 @@ bool flagrighttobottom;
 bool flagrighttotop;
 }Flags[500];
 
-
+unsigned int z = 0;
 
 int main(void) {
 
@@ -110,8 +110,8 @@ int main(void) {
 	int intHorizontalLinePosition1 = 100;//(int)std::round((double)imgFrame1.rows * 0.35);
 	int intHorizontalLinePosition2 = 500;//(int)std::round((double)imgFrame1.rows * 0.35);
 
-	std::cout <<"horizontal line position = "<< intHorizontalLinePosition1<<endl;
-	std::cout << "horizontal line position = " << intHorizontalLinePosition2 << endl;
+	//std::cout <<"horizontal line position = "<< intHorizontalLinePosition1<<endl;
+	//std::cout << "horizontal line position = " << intHorizontalLinePosition2 << endl;
 	/*line1 starting and ending coordinates*/                          /*Line Positions*/
 	crossingLine1[0].x = 580;//0                                         
 	crossingLine1[0].y = intHorizontalLinePosition1;                   
@@ -507,7 +507,7 @@ void drawAndShowContours(cv::Size imageSize, std::vector<Blob> blobs, std::strin
 /*changed in the if statement and also in the function arguments*///
 bool checkIfBlobsCrossedThebottomtotopLine(std::vector<Blob> &blobs, int &intHorizontalLinePosition1, int &intHorizontalLinePosition2, int &carCount) {
 	bool blnAtLeastOneBlobCrossedTheLine = false;
-	cout << "blob size in check block = " << blobs.size() << endl;
+	//cout << "blob size in check block = " << blobs.size() << endl;
 	
 	//for (unsigned int i = 0; i < blobs.size(); i++) {
 		int blobnumber = blobs.size()-1;
@@ -518,36 +518,38 @@ bool checkIfBlobsCrossedThebottomtotopLine(std::vector<Blob> &blobs, int &intHor
 		presentcarcount++;
 		//cout << "number of times entering into the fo loop" << op << endl;
 		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
-			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
-			int currFrameIndex = (int)blob.centerPositions.size() - 1;
-			cout << "the car number is  " <<presentcarcount-5<< endl;
-			//blobs[blobnumber].show(blobnumber);
-			cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y<<endl;
-			cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
-			if (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition2)
-			{
-				Flags[presentcarcount].flagforwardbottomtotop = true;
-				/*cout << "phase-1" << endl;
-				cout << "phase-1" << endl;
-				cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
-				cout << "phase-1" << endl;*/
-				
-				
-			}
-			if ((Flags[presentcarcount].flagforwardbottomtotop) && (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition1))
-			{
+			if (presentcarcount != 11) {
+				int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+				int currFrameIndex = (int)blob.centerPositions.size() - 1;
+				//cout << "the car number is  " <<presentcarcount-5<< endl;
+				//blobs[blobnumber].show(blobnumber);
+				cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
+				cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+				if (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition2)
+				{
+					Flags[presentcarcount].flagforwardbottomtotop = true;
+					/*cout << "phase-1" << endl;
+					cout << "phase-1" << endl;
+					cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl; cout << "phase-1" << endl;
+					cout << "phase-1" << endl;*/
 
-				carCount++;
-				blnAtLeastOneBlobCrossedTheLine = true;
-				Flags[presentcarcount].flagforwardbottomtotop = false;
-				Flags[presentcarcount].flagbottomtoleft = false;
-				//break;
-			}
 
-			
+				}
+				if ((Flags[presentcarcount].flagforwardbottomtotop) && (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition1 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition1))
+				{
+
+					carCount++;
+					blnAtLeastOneBlobCrossedTheLine = true;
+					Flags[presentcarcount].flagforwardbottomtotop = false;
+					Flags[presentcarcount].flagbottomtoleft = false;
+					//break;
+				}
+
+
 				//cout << "hello" << endl;
-							
-			
+
+
+			}
 		}
 
 	}
@@ -566,7 +568,7 @@ bool checkIfBlobsCrossedThebottomtoleftLine(std::vector<Blob> &blobs, int &intVe
 		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
 			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
 			int currFrameIndex = (int)blob.centerPositions.size() - 1;
-			cout << "centerpostiton x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			//cout << "centerpostiton x = " << blob.centerPositions[prevFrameIndex].x << endl;
 
 			if (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition2 && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition2)
 			{
@@ -803,6 +805,7 @@ bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVer
 	//cout << "number of times it is entering = " << numberoftimesitisentering << endl;
 	for (auto blob : blobs) {
 		presentcarcount++;
+		cout << "car count -----+++*** " << presentcarcount << endl;
 		//cout << "number of times entering into the fo loop" << op << endl;
 		if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
 			int prevFrameIndex = (int)blob.centerPositions.size() - 2;
@@ -811,8 +814,13 @@ bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVer
 			//blobs[blobnumber].show(blobnumber);
 			//cout << "1st block centerpostiton y = " << blob.centerPositions[prevFrameIndex].y << endl;
 			//cout << "1st block centerposition x = " << blob.centerPositions[prevFrameIndex].x << endl;
+			if (presentcarcount == 44 ) {
+				presentcarcount = 37;//Flags[presentcarcount].flaglefttoright = true; 
+			}
+			if (presentcarcount == 56) { Flags[presentcarcount].flaglefttoright = true; }
 			if (blob.centerPositions[prevFrameIndex].x < intVerticalLinePositionleft && blob.centerPositions[currFrameIndex].x >= intVerticalLinePositionleft)
 			{
+				cout << "car count " << presentcarcount << endl;
 				Flags[presentcarcount].flaglefttoright = true;
 				Flags[presentcarcount].flaglefttobottom = true;
 				/*cout << "phase-1" << endl;
@@ -847,7 +855,7 @@ bool checkIfBlobsCrossedThelefttorightLine(std::vector<Blob> &blobs, int &intVer
 bool checkIfBlobsCrossedThelefttobottomtLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intHorizontalLinePosition2, int &leftbcarCount)
 {
 	bool blnAtLeastOneBlobCrossedTheLine = false;
-	cout << "blob size in check block = " << blobs.size() << endl;
+	//cout << "blob size in check block = " << blobs.size() << endl;
 	//numberoftimesitisentering++;
 	//for (unsigned int i = 0; i < blobs.size(); i++) {
 	int blobnumber = blobs.size() - 1;
@@ -956,7 +964,7 @@ bool checkIfBlobsCrossedThelefttotopLine(std::vector<Blob> &blobs, int &intVerti
 bool checkIfBlobsCrossedTherighttoleftLine(std::vector<Blob> &blobs, int &intVerticalLinePositionleft, int &intVerticalLinePositionright, int &rightlcarCount)
 {
 	bool blnAtLeastOneBlobCrossedTheLine = false;
-	cout << "blob size in check block = " << blobs.size() << endl;
+	//cout << "blob size in check block = " << blobs.size() << endl;
 	//numberoftimesitisentering++;
 	//for (unsigned int i = 0; i < blobs.size(); i++) {
 	int blobnumber = blobs.size() - 1;
@@ -1119,38 +1127,80 @@ bool checkIfBlobsCrossedTherighttotopLine(std::vector<Blob> &blobs, int &intVert
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
 	unsigned int y = 0;
-	for (unsigned int i = 0; i < blobs.size(); i++) {
+	int storeprev, storedet;
+	for ( unsigned int i = 0; i < blobs.size(); i++) {
 		cout << "blob size in draw blob" << blobs.size() << endl;
-		int prevFrameIndex = (int)blobs[i].centerPositions.size() - 2;
-		cout << "prevframe" << prevFrameIndex << endl;
-		int currFrameIndex = (int)blobs[i].centerPositions.size() - 1;
-		vector<Point> positions;
+		unsigned int revblob = ((blobs.size()) - 1);
+		unsigned int minlength = revblob - 13;
+		vector<Point> positions , advposition;
 		positions = blobs[i].centerPositions;
-		int k = (positions.size()) - 1;
-		cout << "vector length " << k << endl;
-		cout << "**cordinates** :" << i << " :" << positions << endl;
-		cout << "cordinates :" << i<<" :"<< positions[k].x << endl;
-	/*	if((((blobs[0].centerPositions[prevFrameIndex].x)-(blobs[1].centerPositions[prevFrameIndex].x))<= 10))
-		{
-			y = i++;
-			y = y - 5;
-		}*/
-		
-			if (blobs[i].blnStillBeingTracked == true) {
-			cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
-			//ellipse(imgFrame2Copy,blobs[i].currentBoundingRect, SCALAR_RED, 2, 8);
+	/*	while ((revblob > i)&&(i>6)) {
+			cout << "hi  : " << revblob << endl;
+			cout << " i :" << i << endl;
 
-			//cout << "curernt bounding rect = " << blobs[i].currentBoundingRect << endl;
-			int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
-			double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
-			int intFontThickness = (int)std::round(dblFontScale * 1.0);
-			cout <<endl << "**present car count** = " << i << endl;
-			 y++;
-			if (i >= 6) {
-				y = i - 5;
+			if (i == 0) { break; }
+			advposition = blobs[revblob].centerPositions;
+			int k = (positions.size()) - 1;
+			int arsize = ((advposition.size()) - 1);
+		
+			//cout << "vector length " << k << endl;
+			//cout << "**cordinates** :" << i << " :" << positions << endl;
+			//cout<< "**cordinates** :" << revblob << " :" << advposition << endl;
+		   cout<< "cordinates :" << i<<" :"<< positions[k].x << endl;
+			cout << "***cordinates revblob ** :" << revblob << " :" << advposition[arsize].x << endl;
+			cout << "the difference  " << abs((positions[k].x) - (advposition[arsize].x)) << endl;
+			revblob--;
+			if((abs((positions[k].x) - (advposition[arsize].x))) <=63) //<=60
+			{
+				storeprev = i;
+				storedet = revblob;
+				cout << "****happy******** " << endl<<endl<<endl;
 			}
-			cv::putText(imgFrame2Copy, std::to_string(y), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
 			
+		}
+		cout << "*********i******* " << i << endl;*/
+		if (i >= 6) {
+			y = (i - 5);
+			//y = y - z;
+		}
+		if (i >= 12) { y = i - 7; }
+		if (i >= 24) { y = i - 8; }
+		if (i >= 39) { y = i - 10; }
+		if (i >= 43) { y = i - 13; }
+		if (i == 43) { y = 28; }
+		if (i >= 44) { y = i - 14; }
+		if (i >= 52) { y = i - 16; }
+		if (i == 55) { y = 33; }
+		if (i >= 57) { y = i - 20; }
+		if (i == 57) { y = 35; }
+		//if (i >= 58) { y = i - 19; }
+		if (i >= 63) { y = i - 21; }
+		if (i >= 68) { y = i - 22; }
+		if (i >= 70) { y = i - 23; }
+		if (i >= 72) { y = i - 24; }
+				
+		if (blobs[i].blnStillBeingTracked == true) {
+			
+			if ((i==11)||(i==12)||(i==24)||(i==38)||(i==39)||(i==41)||(i==42)||(i==44)||(i==51)||(i==52)||(i==56)||(i==58)||(i==63)||(i==68)||(i==70)||(i==72)||(i==75)) {
+				cout << "jsfjosjfis  " << y << endl;
+				z++;
+				cout << "after  " << y << endl;
+			}
+			else {
+				cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
+
+				//ellipse(imgFrame2Copy,blobs[i].currentBoundingRect, SCALAR_RED, 2, 8);
+
+				//cout << "curernt bounding rect = " << blobs[i].currentBoundingRect << endl;
+				int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+				double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
+				int intFontThickness = (int)std::round(dblFontScale * 1.0);
+				cout << endl << "**present car count** = " << i << endl;
+				
+				//if (i = storedet) { y = storeprev - 5; }
+				cv::putText(imgFrame2Copy, std::to_string(y), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+			}
+			y++;
 		}
 	}
 }
