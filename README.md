@@ -21,3 +21,5 @@ https://github.com/MicrocontrollersAndMore/OpenCV_3_Windows_10_Installation_Tuto
 This project has been completed on 4/14/2017 
  
 For any quiers, please contact me at saiidevesh_kadambari@student.uml.edu
+
+The output can be seen in the link :- https://www.youtube.com/watch?v=clq9GFgi8ck&feature=youtu.be
